@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 
 const app = express();
-const port = 3000;
+const port = 5000;
 
 // Enable CORS and JSON parsing
 app.use(cors());
@@ -16,49 +17,18 @@ app.get('/health', (req, res) => {
 // Helper function to simulate delay
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Mock TypeScript content
-const tsContent1 = `import * as fs from 'fs';
-
-function calculateFloor(input: string): number {
-    let floor: number = 0;
-    for (let i: number = 0; i < input.length; i++) {
-        if (input[i] === '(') {
-            floor++;
-        } else if (input[i] === ')') {
-            floor--;
-        }
-    }
-    return floor;
-}
-
-const input: string = fs.readFileSync('input.txt', 'utf8');
-console.log('Part 1:', calculateFloor(input));`;
-
-const tsContent2 = `import * as fs from 'fs';
-
-function findBasementPosition(input: string): number {
-    let floor: number = 0;
-    for (let i: number = 0; i < input.length; i++) {
-        if (input[i] === '(') {
-            floor++;
-        } else if (input[i] === ')') {
-            floor--;
-        }
-        if (floor === -1) {
-            return i + 1;
-        }
-    }
-    return -1;
-}
-
-const input: string = fs.readFileSync('input.txt', 'utf8');
-console.log('Part 2:', findBasementPosition(input));`;
+const authProj = fs.readFileSync("src/AS-Auth/AS-Auth.csproj", "utf8")
+const auth = fs.readFileSync("src/AS-Auth/Auth.cs", "utf8")
+const keyUtil = fs.readFileSync("src/AS-Auth/KeyUtil.cs", "utf8")
+const dateTimeOffsetProvider = fs.readFileSync("src/AS-Auth/DateTimeOffsetProvider.cs", "utf8")
+const guidProvider = fs.readFileSync("src/AS-Auth/GuidProvider.cs", "utf8")
 
 const convertedFiles = [
-    { oldPath: "2015/day1.js", newPath: "2015/day1-converted-1.ts", content: tsContent1 },
-    { oldPath: "2015/day1.js", newPath: "2015/day1-converted-2.ts", content: tsContent2 },
-    { oldPath: "2015/day2.ts", newPath: "2015/day2-converted.ts", content: tsContent1 },
-    { oldPath: "2015/day4.js", newPath: "2015/day4-converted.ts", content: tsContent2 },
+    { oldPath: "legacy_code/AS-Auth/AS-Auth.csproj", newPath: "modernize/AS-Auth/AS-AuthMigrated.csproj", content: authProj },
+    { oldPath: "legacy_code/AS-Auth/Auth.cs", newPath: "modernize/AS-Auth/AuthMigrated.cs", content: auth },
+    { oldPath: "legacy_code/AS-Auth/KeyUtil.cs", newPath: "modernize/AS-Auth/KeyUtilMigrated.cs", content: keyUtil },
+    { oldPath: "legacy_code/AS-Auth/DateTimeOffsetProvider.cs", newPath: "modernize/AS-Auth/DateTimeOffsetProviderMigrated.cs", content: dateTimeOffsetProvider },
+    { oldPath: "legacy_code/AS-Auth/GuidProvider.cs", newPath: "modernize/AS-Auth/GuidProviderMigrated.cs", content: guidProvider },
 ];
 
 // Streaming API endpoint
@@ -72,7 +42,7 @@ app.post('/api/legacyleap', async (req, res) => {
         // Initial message
         res.write(`data: ${JSON.stringify({
             type: 'text',
-            text: "FROM Node server, I'll help you convert the file. Let me analyze the content and make the necessary changes.\n\n"
+            text: "Streaming the conversion of the .Net 4 to .Net 10.\n\n"
         })}\n\n`);
         await sleep(300);
 
@@ -105,7 +75,7 @@ app.post('/api/legacyleap', async (req, res) => {
         // Final completion message
         res.write(`data: ${JSON.stringify({
             type: 'text',
-            text: "<attempt_completion>\n<result>\nI've successfully converted the JavaScript files to TypeScript. The conversion includes:\n- Proper TypeScript type annotations\n- Modern ES6+ import syntax\n- Type declarations for all variables and functions\n- Maintained the original functionality while adding type safety\n</result>\n</attempt_completion>"
+            text: "<attempt_completion>\n<result>\nConversion complete.\n</result>\n</attempt_completion>"
         })}\n\n`);
 
         // Add usage statistics

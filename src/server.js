@@ -122,7 +122,7 @@ app.get('/api/legacyleap/model_info', verifyAuthorization, (req, res) => {
             legacyLeapSupportedModels: {
                 "gpt-4o": {
                     provider: "openai",
-                    encryptedApiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlLZXkiOiJzay1wcm9qLVdjYlVjT0dlM0xscFlySzIzazlpbUY1a2NSY2l2RU03WjJjV1hKTGNVcFd1d2tKNEIzZ09tb2M2WTl1RjhkX3pkYlhoclF2UE15VDNCbGJrRkpsbjdpcnp1NzV0dUxaVWpLR0NwTDZwek1jVDYxbnFvTGZPTEFlempPX2tVeThwbTU5cHpDNndnYnpHOHFxVkU3bzZiTU9WNHdFQSIsImlzcyI6ImxlZ2FjeWxlYXAiLCJpYXQiOjE3NDk3MTY1MjF9.FUDknzR2PN6xb6y4PAzx47W8hQvs8LcD0l3Br7TT2Y8",
+                    encryptedApiKey: process.env.open_ai,
                     maxTokens: 4_096,
                     contextWindow: 128_000,
                     supportsImages: true,
@@ -132,7 +132,7 @@ app.get('/api/legacyleap/model_info', verifyAuthorization, (req, res) => {
                 },
                 "legacyleap-1.0-standard": {
                     provider: "legacyLeap",
-                    encryptedApiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlLZXkiOiJtb2NrLWxlZ2FjeWxlYXAta2V5IiwiaXNzIjoibGVnYWN5bGVhcCIsImlhdCI6MTc0OTcxNjUyMX0.Yft6eQKpBC-o51vJH5Zlit4A6HTHQCzM5-FeHZW8XY8",
+                    encryptedApiKey: process.env.legacyleap,
                     maxTokens: 4_096,
                     contextWindow: 128_000,
                     supportsImages: true,

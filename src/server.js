@@ -17,18 +17,12 @@ app.get('/health', (req, res) => {
 // Helper function to simulate delay
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const authProj = fs.readFileSync("src/AS-Auth/AS-Auth.csproj", "utf8")
-const auth = fs.readFileSync("src/AS-Auth/Auth.cs", "utf8")
-const keyUtil = fs.readFileSync("src/AS-Auth/KeyUtil.cs", "utf8")
-const dateTimeOffsetProvider = fs.readFileSync("src/AS-Auth/DateTimeOffsetProvider.cs", "utf8")
-const guidProvider = fs.readFileSync("src/AS-Auth/GuidProvider.cs", "utf8")
-
 const convertedFiles = [
-    { oldPath: "legacy_code/AS-Auth/AS-Auth.csproj", newPath: "modernize/AS-Auth/AS-AuthMigrated.csproj", content: authProj },
-    { oldPath: "legacy_code/AS-Auth/Auth.cs", newPath: "modernize/AS-Auth/AuthMigrated.cs", content: auth },
-    { oldPath: "legacy_code/AS-Auth/KeyUtil.cs", newPath: "modernize/AS-Auth/KeyUtilMigrated.cs", content: keyUtil },
-    { oldPath: "legacy_code/AS-Auth/DateTimeOffsetProvider.cs", newPath: "modernize/AS-Auth/DateTimeOffsetProviderMigrated.cs", content: dateTimeOffsetProvider },
-    { oldPath: "legacy_code/AS-Auth/GuidProvider.cs", newPath: "modernize/AS-Auth/GuidProviderMigrated.cs", content: guidProvider },
+    { oldPath: "legacy_code/AS-Auth/AS-Auth.csproj", newPath: "modernize/AS-Auth/AS-AuthMigrated.csproj", content: fs.readFileSync("src/AS-Auth/AS-Auth.csproj", "utf8") },
+    { oldPath: "legacy_code/AS-Auth/Auth.cs", newPath: "modernize/AS-Auth/AuthMigrated.cs", content: fs.readFileSync("src/AS-Auth/Auth.cs", "utf8") },
+    { oldPath: "legacy_code/AS-Auth/KeyUtil.cs", newPath: "modernize/AS-Auth/KeyUtilMigrated.cs", content: fs.readFileSync("src/AS-Auth/KeyUtil.cs", "utf8") },
+    { oldPath: "legacy_code/AS-Auth/DateTimeOffsetProvider.cs", newPath: "modernize/AS-Auth/DateTimeOffsetProviderMigrated.cs", content: fs.readFileSync("src/AS-Auth/DateTimeOffsetProvider.cs", "utf8") },
+    { oldPath: "legacy_code/AS-Auth/GuidProvider.cs", newPath: "modernize/AS-Auth/GuidProviderMigrated.cs", content: fs.readFileSync("src/AS-Auth/GuidProvider.cs", "utf8") },
 ];
 
 // Streaming API endpoint
@@ -90,6 +84,73 @@ app.post('/api/legacyleap', async (req, res) => {
     } catch (error) {
         console.error('Error in streaming:', error);
         res.end();
+    }
+});
+
+// Helper function to verify authorization
+const verifyAuthorization = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ 
+            error: 'Unauthorized', 
+            message: 'Authorization Bearer token required' 
+        });
+    }
+    
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    // In a real implementation, you would verify the token here
+    if (!token || token.trim() === '') {
+        return res.status(401).json({ 
+            error: 'Unauthorized', 
+            message: 'Invalid Bearer token' 
+        });
+    }
+    
+    // For this mock server, we'll accept any non-empty token
+    req.bearerToken = token;
+    next();
+};
+
+// Model info endpoint - returns model information with JWT encrypted API keys
+app.get('/api/legacyleap/model_info', verifyAuthorization, (req, res) => {
+    try {
+        // Create mock JWT tokens similar to legacyleap.ts getMockModelInfo method
+        const algorithm = 'HS256';
+        const modelInfo = {
+            legacyLeapSupportedModels: {
+                "gpt-4o": {
+                    provider: "openai",
+                    encryptedApiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlLZXkiOiJzay1wcm9qLVdjYlVjT0dlM0xscFlySzIzazlpbUY1a2NSY2l2RU03WjJjV1hKTGNVcFd1d2tKNEIzZ09tb2M2WTl1RjhkX3pkYlhoclF2UE15VDNCbGJrRkpsbjdpcnp1NzV0dUxaVWpLR0NwTDZwek1jVDYxbnFvTGZPTEFlempPX2tVeThwbTU5cHpDNndnYnpHOHFxVkU3bzZiTU9WNHdFQSIsImlzcyI6ImxlZ2FjeWxlYXAiLCJpYXQiOjE3NDk3MTY1MjF9.FUDknzR2PN6xb6y4PAzx47W8hQvs8LcD0l3Br7TT2Y8",
+                    maxTokens: 4_096,
+                    contextWindow: 128_000,
+                    supportsImages: true,
+                    supportsPromptCache: false,
+                    inputPrice: 2.5,
+                    outputPrice: 10,
+                },
+                "legacyleap-1.0-standard": {
+                    provider: "legacyLeap",
+                    encryptedApiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlLZXkiOiJtb2NrLWxlZ2FjeWxlYXAta2V5IiwiaXNzIjoibGVnYWN5bGVhcCIsImlhdCI6MTc0OTcxNjUyMX0.Yft6eQKpBC-o51vJH5Zlit4A6HTHQCzM5-FeHZW8XY8",
+                    maxTokens: 4_096,
+                    contextWindow: 128_000,
+                    supportsImages: true,
+                    supportsPromptCache: false,
+                    inputPrice: 2.5,
+                    outputPrice: 10,
+                }
+            },
+            algorithm
+        };
+        
+        res.json(modelInfo);
+    } catch (error) {
+        console.error('Error generating model info:', error);
+        res.status(500).json({ 
+            error: 'Internal Server Error', 
+            message: 'Failed to generate model information' 
+        });
     }
 });
 
